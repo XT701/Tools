@@ -12,9 +12,16 @@ do
 	break
 done
 
+PS3="Choose (1-2):"
+echo "Choose your ramdisk compression mode from the list below."
+select com in gzip lzma xz
+do
+	break
+done
+
 pack()
 {
-./repack-bootimg.pl zImage $name/ boot.img
+./repack-bootimg.pl $com zImage $name/ boot.img
 rm ./OTA/boot.img
 cp ./boot.img ./OTA/
 cd ./OTA/
@@ -28,7 +35,7 @@ echo "Pack boot OTA package done!"
 if [ $name = "OpenRecovery" ]; then
 cp $(pwd)/../$kernel/arch/arm/boot/zImage ./
 rm ./#*.img
-./repack-bootimg.pl zImage ../OpenRecovery/lite/ramdisk recovery.img
+./repack-bootimg.pl $com zImage ../OpenRecovery/lite/ramdisk recovery.img
 echo "Pack recovery image done!"
 else
 PS3="Choose (Yes/No):"
@@ -40,7 +47,7 @@ done
 echo "You chose RAMDISK=$name,Kernel=$kernel,VERSION=$(cat $(pwd)/../$kernel/.version)"
 cp $(pwd)/../$kernel/arch/arm/boot/zImage ./
 rm ./#*.img
-./repack-bootimg.pl zImage $name/ \#$(cat $(pwd)/../$kernel/.version)-$name-$(stat -c %y $(pwd)/../$kernel/arch/arm/boot/zImage | cut -b1-10).img
+./repack-bootimg.pl $com zImage $name/ \#$(cat $(pwd)/../$kernel/.version)-$name-$(stat -c %y $(pwd)/../$kernel/arch/arm/boot/zImage | cut -b1-10).img
 echo "Pack boot image done!"
 if [ $bool = "Yes" ]; then
 pack

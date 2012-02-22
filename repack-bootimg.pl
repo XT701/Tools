@@ -3,21 +3,20 @@
 use strict;
 use Cwd;
 
-
 my $dir = getcwd;
 
-my $usage = "repack-bootimg.pl <kernel> <ramdisk-directory> <outfile>\n";
+my $usage = "repack-bootimg.pl <compress mode: gzip/xz/lzma> <kernel> <ramdisk-directory> <outfile>\n";
 
-die $usage unless $ARGV[0] && $ARGV[1] && $ARGV[2];
+die $usage unless $ARGV[0] && $ARGV[1] && $ARGV[2] && $ARGV[3];
 
-chdir $ARGV[1] or die "$ARGV[1] $!";
+chdir $ARGV[2] or die "$ARGV[2] $!";
 
-system ("find . | cpio -o -H newc | lzma > $dir/ramdisk-repack.cpio.gz");
+system ("find . | cpio -o -H newc | $ARGV[0] > $dir/ramdisk-repack.cpio.gz");
 
-chdir $dir or die "$ARGV[1] $!";;
+chdir $dir or die "$ARGV[2] $!";;
 
-system ("./mkbootimg --kernel $ARGV[0] --ramdisk ramdisk-repack.cpio.gz -o $ARGV[2]");
+system ("./mkbootimg --kernel $ARGV[1] --ramdisk ramdisk-repack.cpio.gz -o $ARGV[3]");
 
 unlink("ramdisk-repack.cpio.gz") or die $!;
 
-print "\nrepacked boot image written at $ARGV[1]-repack.img\n";
+print "\nrepacked boot image written at $ARGV[2]-repack.img\n";
