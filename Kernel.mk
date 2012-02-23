@@ -14,10 +14,12 @@ done
 
 PS3="Choose (1-2):"
 echo "Choose your ramdisk compression mode from the list below."
-select com in gzip lzma xz
+select com in GZIP LZMA XZ
 do
 	break
 done
+
+com=`tr '[A-Z]' '[a-z]' <<<"$com"`
 
 pack()
 {
