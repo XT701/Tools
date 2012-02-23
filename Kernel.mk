@@ -36,7 +36,7 @@ echo "Pack boot OTA package done!"
 
 if [ $name = "OpenRecovery" ]; then
 cp $(pwd)/../$kernel/arch/arm/boot/zImage ./
-rm ./#*.img
+rm ./*.img
 ./repack-bootimg.pl $com zImage ../OpenRecovery/lite/ramdisk recovery.img
 echo "Pack recovery image done!"
 else
@@ -48,7 +48,7 @@ do
 done
 echo "You chose RAMDISK=$name,Kernel=$kernel,VERSION=$(cat $(pwd)/../$kernel/.version)"
 cp $(pwd)/../$kernel/arch/arm/boot/zImage ./
-rm ./#*.img
+rm ./*.img
 ./repack-bootimg.pl $com zImage $name/ \#$(cat $(pwd)/../$kernel/.version)-$name-$(stat -c %y $(pwd)/../$kernel/arch/arm/boot/zImage | cut -b1-10).img
 echo "Pack boot image done!"
 if [ $bool = "Yes" ]; then
