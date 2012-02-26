@@ -5,14 +5,14 @@ select kernel in Kernel Kernel_DEPRECATED
 do
 	break
 done
-PS3="Choose (1-2):"
+PS3="Choose (1-4):"
 echo "Choose your ramdisk from the list below."
-select name in CyanogenMod7 CyanogenMod9 OpenRecovery
+select name in CyanogenMod7 CyanogenMod9  MIUI OpenRecovery
 do
 	break
 done
 
-PS3="Choose (1-2):"
+PS3="Choose (1-3):"
 echo "Choose your ramdisk compression mode from the list below."
 select com in GZIP LZMA XZ
 do
