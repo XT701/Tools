@@ -1,0 +1,10 @@
+#!/bin/sh
+#SetCrossCompile
+export ARCH=arm
+#export CROSS_COMPILE=arm-none-eabi-
+export CROSS_COMPILE=/mnt/ext/android/CyanogenMod/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+#SetJavaEnvironment JDK6
+export J2SDKDIR=/mnt/ext/android/JavaEnvironment
+export DERBY_HOME=/mnt/ext/android/JavaEnvironment/db
+export JAVA_HOME=/mnt/ext/android/JavaEnvironment:${JAVA_HOME:-/mnt/ext/android/JavaEnvironment/jre}
+export PATH=$PATH:/mnt/ext/android/JavaEnvironment/bin:/mnt/ext/android/JavaEnvironment/db/bin:/mnt/ext/android/JavaEnvironment/jre/bin
