@@ -34,7 +34,7 @@ on init
     mkdir /data/download 0775 system system
     mkdir /data/download/mystuff 0775 system system
 
-    write /dev/usb_device_mode msc_adb
+    # write /dev/usb_device_mode msc_adb
 
     chmod 0660 /dev/mtp
     chmod 0660 /dev/ttyGS0
