@@ -1,7 +1,7 @@
 #!/bin/bash
-PS3="Choose (1-2):"
+PS3="Choose (1-3):"
 echo "Choose your kernel from the list below."
-select kernel in Kernel Kernel_DEPRECATED
+select kernel in Kernel Kernel_DEPRECATED M1_Kernel
 do
 	break
 done
