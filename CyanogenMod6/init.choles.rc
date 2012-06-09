@@ -35,8 +35,6 @@ on init
     mkdir /data/download/mystuff 0775 system system
 
     # write /dev/usb_device_mode msc_adb
-    
-    insmod /lib/modules/overclock.ko
 
     chmod 0660 /dev/mtp
     chmod 0660 /dev/ttyGS0
@@ -91,7 +89,6 @@ on boot
 
     mkdir /data/system 0771 system system
     mkdir /data/misc/wifi 0770 wifi wifi
-    mkdir /data/misc/wifi/hostapd.sockets 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
@@ -100,10 +97,7 @@ on boot
     mkdir /data/gki 0770 radio radio
     mkdir /tmp/commdrv 0770 radio radio
 
-    copy /system/etc/wifi/softap/hostapd.conf /data/misc/wifi/hostapd.conf
-    copy /system/etc/wifi/dnsmasq.conf /data/misc/wifi/dns.conf
-    chown wifi wifi /data/misc/wifi/dns.conf
-    chmod 666 /data/misc/wifi/dns.conf
+
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
     chmod 0660                /sys/class/rfkill/rfkill0/state
@@ -116,11 +110,6 @@ on boot
     mkdir /data/logger 0770 radio log
     chown radio log /data/logger
     chmod 0770 /data/logger
-    mkdir /cache/logger 0770 radio log
-    chown radio log /cache/logger
-    chmod 0770 /cache/logger
-    exec /system/bin/sh /system/bin/init_early_bind_mounts.sh
-    exec /system/bin/sh /system/bin/init_bp_nvm.sh
 
     mkdir /pds/lost+found 0770
     chown root root /pds/lost+found
@@ -182,6 +171,15 @@ on boot
     chown system graphics /dev/pvrsrvkm
 
     write /sys/devices/platform/ohci.0/usb2/2-3/power/level auto
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 250000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 700000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/up_threshold 95
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/down_threshold 70
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/sampling_rate 37500
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/sampling_down_factor 10
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 1
+    write /sys/devices/system/cpu/sched_mc_power_savings 1
     write /sys/module/wakelock/parameters/debug_mask 7
 
     write /sys/power/sr_vdd1_autocomp 1
@@ -190,10 +188,6 @@ on boot
 
     write /proc/sys/kernel/softlockup_panic 1
     write /sys/block/mmcblk0/bdi/read_ahead_kb 256
-
-# Start services
-class_start pre-zygote_services
-
     exec /system/bin/mot_boot_mode
     setrlimit 4 2147483648 2147483648
 
@@ -206,7 +200,6 @@ on property:persist.sys.one_percent_batt=1
     start batt2d
 
 on property:sys.chargeonly.mode=1
-    class_stop pre-zygote_services
     start console
     exec /system/bin/charge_only_mode
 
@@ -233,17 +226,6 @@ on property:tcmd.suspend=1
 # Normal to suspend 
 on property:tcmd.suspend=2
     class_stop zygote_services
-
-# Moto safe power down
-on property:sys.reboot=1
-    stop ssmgrd
-    exec /system/bin/sleep 10
-    exec /system/bin/reboot
-
-on property:sys.shutdown=1
-    stop ssmgrd
-    exec /system/bin/sleep 10
-    exec /system/bin/reboot -p
 
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
@@ -331,16 +313,6 @@ service wlan_loader /system/bin/wlan_loader \
     disabled
     oneshot
 
-service wlan_ap_loader /system/bin/logwrapper /system/bin/tiap_loader -f /system/etc/wifi/fw_tiwlan_ap.bin -i /system/etc/wifi/tiwlan_ap.ini -e /pds/wifi/nvs_map.bin
-    post-zygote_services
-    disabled
-    oneshot
-
-service hostapd /system/bin/logwrapper /system/bin/hostap -d /data/misc/wifi/hostapd.conf
-    post-zygote_services
-    disabled
-    oneshot
-
 service wpa_supplicant /system/bin/wpa_supplicant \
     -Dtiwlan0 -itiwlan0 -c/data/misc/wifi/wpa_supplicant.conf
     class post-zygote_services
@@ -348,12 +320,7 @@ service wpa_supplicant /system/bin/wpa_supplicant \
     disabled
     oneshot
 
-service dhcpcd_tiwlan0 /system/bin/dhcpcd -ABKL
-    class post-zygote_services
-    disabled
-    oneshot
-
-service iprenew_tiwlan0 /system/bin/dhcpcd -n
+service dhcpcd /system/bin/dhcpcd -ABKL tiwlan0
     class post-zygote_services
     disabled
     oneshot
@@ -364,10 +331,6 @@ service hciattach /system/bin/hciattach \
     user bluetooth
     group bluetooth net_bt_admin
     disabled
-
-on property:hw.dspbridge.needs_recovery=1
-    start baseimage
-    setprop hw.dspbridge.needs_recovery 0
 
 service baseimage /system/bin/dspexec -v -T /system/lib/dsp/baseimage.dof
     class media_early_init
@@ -388,6 +351,10 @@ service locDrv /system/bin/brcm_guci_drv -config /system/etc/gpsconfig.xml
     class post-zygote_services
     user radio
     group radio inet sdcard_rw
+
+service pm_init /system/bin/sh /system/bin/pm_init.sh
+    class post-zygote_services
+    oneshot
 
 service secclkd /system/bin/secclkd
     class post-zygote_services
