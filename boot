@@ -1,1 +1,1 @@
-adb reboot bootloader && fastboot boot boot.img
+adb shell reboot bootloader && fastboot boot boot.img
