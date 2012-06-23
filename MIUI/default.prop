@@ -4,7 +4,4 @@
 ro.secure=0
 ro.allow.mock.location=0
 ro.debuggable=1
-ro.ril.def.agps.mode=1
 persist.service.adb.enable=1
-persist.sys.timezone=Asia/Shanghai
-debug.sf.hw=1
