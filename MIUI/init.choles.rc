@@ -35,16 +35,16 @@ on init
     mkdir /data/download 0775 system system
     mkdir /data/download/mystuff 0775 system system
 
-    write /dev/usb_device_mode msc_adb
+  # write /dev/usb_device_mode msc_adb
 
-chmod 0660 /dev/mtp
-chmod 0660 /dev/ttyGS0
-chmod 0660 /dev/usb_device_mode
-chmod 0660 /proc/mtpctl
-chown mot_usb mot_usb /dev/mtp
-chown mot_usb mot_usb /dev/ttyGS0
-chown mot_usb mot_usb /dev/usb_device_mode
-chown mot_usb mot_usb /proc/mtpctl
+    chmod 0660 /dev/mtp
+    chmod 0660 /dev/ttyGS0
+    chmod 0660 /dev/usb_device_mode
+    chmod 0660 /proc/mtpctl
+    chown mot_usb mot_usb /dev/mtp
+    chown mot_usb mot_usb /dev/ttyGS0
+    chown mot_usb mot_usb /dev/usb_device_mode
+    chown mot_usb mot_usb /proc/mtpctl
 
 setprop ro.sys.atvc_allow_gki_log 0
 setprop ro.sys.atvc_allow_bp_log 0
@@ -56,6 +56,18 @@ setprop ro.sys.atvc_allow_res_panic 0
 setprop ro.sys.atvc_allow_all_adb 0
 setprop ro.sys.atvc_allow_all_core 0
 setprop ro.sys.atvc_allow_efem 0
+
+
+# Install kernel modules
+
+# Install BP related kernel modules
+    #Start the engine modules for netmux first for other daemons depends on it
+    insmod /system/lib/modules/netmux.ko
+    insmod /system/lib/modules/netmux_linkdriver.ko
+    insmod /system/lib/modules/modem_pm_driver.ko
+    insmod /system/lib/modules/sec.ko
+    insmod /system/lib/modules/dsifix.ko
+
 on early-boot
     setprop ro.FOREGROUND_APP_ADJ 0
     setprop ro.VISIBLE_APP_ADJ 1
@@ -156,6 +168,8 @@ on boot
     chown radio log /cache/logger
     chmod 0770 /cache/logger
     exec /system/bin/sh /system/bin/init_mount_logger.sh
+    exec /system/bin/sh /system/bin/init_early_bind_mounts.sh
+    exec /system/bin/sh /system/bin/init_bp_nvm.sh
 
     mkdir /pds/lost+found 0770
     chown root root /pds/lost+found
@@ -206,12 +220,23 @@ on boot
     chmod 0660 /sys/class/leds/red/brightness
     chown system system /sys/class/leds/green/brightness
     chmod 0660 /sys/class/leds/green/brightness
-    chmod 0660 /sys/class/leds/torch-flash/camera_strobe
+  
+      chmod 0660 /sys/class/leds/torch-flash/camera_strobe
     chmod 0660 /sys/class/leds/torch-flash/flash_light
     chown system system /sys/class/leds/torch-flash/camera_strobe
     chown system system /sys/class/leds/torch-flash/flash_light
-   chown system camera /sys/class/leds/spotlight/brightness
-   chmod 0660 /sys/class/leds/spotlight/brightness
+    chown system system /sys/class/leds/spotlight/brightness
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/af-led/brightness
+    chmod 0660 /sys/class/leds/af-led/brightness
+    chown system system /sys/class/leds/button-backlight/brightness
+    chmod 777 /sys/class/leds/red/brightness
+    chmod 777 /sys/class/leds/green/brightness
+    chmod 777 /sys/class/leds/blue/brightness
+    chmod 777 /sys/class/leds/af-led/brightness
+    chmod 777 /sys/class/leds/button-backlight/brightness
 
     chmod 0660 /sys/class/timed_output/vibrator/enable
 
@@ -219,21 +244,27 @@ on boot
     chown system graphics /dev/pvrsrvkm
 
     write /sys/devices/platform/ohci.0/usb2/2-3/power/level auto
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 250000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 720000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-    write /sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold 86
-    write /sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate 46875
     write /sys/module/wakelock/parameters/debug_mask 7
 
     write /sys/power/sr_vdd1_autocomp 1
     write /sys/power/sr_vdd2_autocomp 1
     write /sys/power/enable_abb_mode 1
 
+# Enable panic on softlockup
     write /proc/sys/kernel/softlockup_panic 1
-    write /sys/block/mmcblk0/bdi/read_ahead_kb 2048
+
+# google maps can freeze on launch when SD card read_ahead_kb is set too high
+# RAM is too precious on Milestone, so don't waste it on marginals
+    write /sys/block/mmcblk0/bdi/read_ahead_kb 16
+
+# Start services
     exec /system/bin/mot_boot_mode
+
+# Set core max size (2G)
     setrlimit 4 2147483648 2147483648
+
+# The properties introduced by moto
+
 on property:sys.chargeonly.mode=1
     start battd
     start console
@@ -269,6 +300,7 @@ on property:tcmd.suspend=1
 on property:tcmd.suspend=2
     class_stop zygote_services
 
+# aplogd on at boot in emulator
 on property:ro.kernel.qemu=1
     start aplogd
 
@@ -297,17 +329,19 @@ on property:sys.shutdown=1
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
 
+
 service atvc /system/bin/dbvc_atvc_property_set
     class pre-zygote_services
     user system
     group system
     oneshot
+
 service keypadinit /system/bin/sh /system/bin/init_prep_keypad.sh
     class pre-zygote_services
     user root
     oneshot
 
-service usbd /sbin/usbd
+service usbd /system/bin/usbd
     class pre-zygote_services
     user root
     group mot_usb system
@@ -411,6 +445,7 @@ service wlan_loader /system/bin/wlan_loader \
     -f /system/etc/wifi/fw_wlan1271.bin -i /system/etc/wifi/tiwlan.ini \
     -e /config/wifi/nvs_map.bin
     class post-zygote_services
+  
     disabled
     oneshot
 
@@ -482,3 +517,8 @@ service secclkd /system/bin/secclkd
     group system radio
     oneshot 
 
+# bugreport is triggered by the KEY_LEFTSHIFT and KEY_MENU keycodes
+service bugreport /system/bin/dumpstate -d -v -o /sdcard/bugreports/bugreport
+    disabled
+    oneshot
+    keycodes 42 139
