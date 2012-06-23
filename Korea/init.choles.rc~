@@ -502,10 +502,6 @@ service dhcpcd /system/bin/dhcpcd -ABKL tiwlan0
     disabled
     oneshot
 
-on property:hw.dspbridge.needs_recovery=1
-    start baseimage
-    setprop hw.dspbridge.needs_recovery 0
-
 service baseimage /system/bin/dspexec -v -T /system/lib/dsp/baseimage.dof
     class media_early_init
     user  media
