@@ -7,7 +7,7 @@ do
 done
 PS3="Choose (1-4):"
 echo "Choose your ramdisk from the list below."
-select name in 2.1 CyanogenMod6 CyanogenMod7 CyanogenMod9  MIUI OpenRecovery Korea
+select name in 2.1 CyanogenMod6 CyanogenMod7 CyanogenMod9  MIUI OpenRecovery
 do
 	break
 done

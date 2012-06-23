@@ -5,7 +5,7 @@ DIR=/ext/android
 #SetCrossCompile
 export ARCH=arm
 #export CROSS_COMPILE=arm-none-eabi-
-export CROSS_COMPILE=$DIR/home/xiangzi/xt701/Kernel_DEPRECATED/arm-eabi-4.4.3/bin/arm-eabi-
+export CROSS_COMPILE=$DIR/cyanogenmod/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 #SetJavaEnvironment JDK6
 export J2SDKDIR=$DIR/java
 export DERBY_HOME=$DIR/java/db
