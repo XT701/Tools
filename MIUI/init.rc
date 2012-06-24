@@ -20,6 +20,7 @@ loglevel 3
     export TERMINFO /system/etc/terminfo
 
     symlink /system/etc /etc
+    symlink /sys/kernel/debug /d
 
     mkdir /mnt 0775 root system
     mkdir /mnt/sdcard 0000 system system
@@ -163,6 +164,7 @@ on boot
     setprop ro.BACKUP_APP_ADJ 5
     setprop ro.HOME_APP_ADJ 6
     setprop ro.HIDDEN_APP_MIN_ADJ 7
+    setprop ro.CONTENT_PROVIDER_ADJ 14
     setprop ro.EMPTY_APP_ADJ 15
 
     setprop ro.FOREGROUND_APP_MEM 1536
@@ -171,20 +173,25 @@ on boot
     setprop ro.HEAVY_WEIGHT_APP_MEM 4096
     setprop ro.SECONDARY_SERVER_MEM 6144
     setprop ro.BACKUP_APP_MEM 6144
-    setprop ro.HOME_APP_MEM 6144
-    setprop ro.HIDDEN_APP_MEM 6656
-    setprop ro.EMPTY_APP_MEM 8192
+    setprop ro.HOME_APP_MEM 7168
+    setprop ro.HIDDEN_APP_MEM 7168
+    setprop ro.CONTENT_PROVIDER_MEM 10752
+    setprop ro.EMPTY_APP_MEM 13824
 
-    write /sys/module/lowmemorykiller/parameters/adj 0,1,2,4,7,15
+    write /sys/module/lowmemorykiller/parameters/adj 0,2,4,7,14,15
 
     write /proc/sys/vm/overcommit_memory 1
-#    write /proc/sys/vm/min_free_kbytes 6144
+    write /proc/sys/vm/min_free_kbytes 4096
     write /proc/sys/vm/min_free_order_shift 4
-    write /sys/module/lowmemorykiller/parameters/minfree 1536,3072,4096,6144,6656,8192
+    write /sys/module/lowmemorykiller/parameters/minfree 2048,3072,6144,7168,10752,13824
     write /proc/1/oom_adj -16
     # Tweak background writeout
-    write /proc/sys/vm/dirty_expire_centisecs 200
-    write /proc/sys/vm/dirty_background_ratio  5
+    write /proc/sys/vm/dirty_ratio 40
+    write /proc/sys/vm/dirty_writeback_centisecs 800
+    write /proc/sys/vm/dirty_expire_centisecs 400
+    write /proc/sys/vm/dirty_background_ratio 20
+    write /proc/sys/vm/vfs_cache_pressure 20
+    write /proc/sys/vm/drop_caches 3
     write /proc/sys/vm/swappiness 80
 
     chown radio system /sys/android_power/state
@@ -195,6 +202,10 @@ on boot
     chown radio system /sys/power/state
     chown radio system /sys/power/wake_lock
     chown radio system /sys/power/wake_unlock
+    chown radio system /sys/camera_led_status/led_ril_status
+    chown system system /sys/camera_led_status/led_wimax_status
+    chown system system /sys/camera_led_status/led_hotspot_status
+    chown media system /sys/android_camera/cam_mode
     chmod 0660 /sys/power/state
     chmod 0660 /sys/power/wake_lock
     chmod 0660 /sys/power/wake_unlock
@@ -203,9 +214,13 @@ on boot
     chown system system /sys/class/leds/lcd-backlight/brightness
     chown system system /sys/class/leds/button-backlight/brightness
     chown system system /sys/class/leds/jogball-backlight/brightness
+    chown system system /sys/class/leds/vtkey-backlight/brightness
+    chown system system /sys/class/leds/caps/brightness
+    chown system system /sys/class/leds/func/brightness
     chown system system /sys/class/leds/red/brightness
     chown system system /sys/class/leds/green/brightness
     chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/amber/brightness
     chown system system /sys/class/leds/red/device/grpfreq
     chown system system /sys/class/leds/red/device/grppwm
     chown system system /sys/class/leds/red/device/blink
@@ -215,6 +230,10 @@ on boot
     chown system system /sys/class/leds/red/device/grpfreq
     chown system system /sys/class/leds/red/device/grppwm
     chown system system /sys/class/leds/red/device/blink
+    chown system system /sys/class/leds/green/blink
+    chown system system /sys/class/leds/green/off_timer
+    chown system system /sys/class/leds/amber/blink
+    chown system system /sys/class/leds/amber/off_timer
     chown system system /sys/class/timed_output/vibrator/enable
     chown system system /sys/module/sco/parameters/disable_esco
     chown system system /sys/kernel/ipv4/tcp_wmem_min
@@ -225,12 +244,12 @@ on boot
     chown system system /sys/kernel/ipv4/tcp_rmem_max
     chown root radio /proc/cmdline
 
-    setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.default 4096,87380,256960,4096,16384,256960
     setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
-    setprop net.tcp.buffersize.hspa    4094,87380,262144,4096,16384,262144
-    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
-    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
+    setprop net.tcp.buffersize.umts    4094,87380,256960,4096,16384,256960
+        setprop net.tcp.buffersize.hspa    4094,87380,262144,4096,16384,262144
+setprop net.tcp.buffersize.edge    4093,87380,256960,4096,16384,256960
+    setprop net.tcp.buffersize.gprs    4092,87380,256960,4096,16384,256960
 
     import /system/etc/init.local.rc
     exec /system/bin/sysinit
@@ -264,12 +283,6 @@ on property:persist.service.adb.enable=1
 on property:persist.service.adb.enable=0
     stop adbd
 
-on property:service.adb.tcp.port=5555
-    restart adbd
-
-on property:service.adb.tcp.port=-1
-    restart adbd
-
 service servicemanager /system/bin/servicemanager
     class pre-zygote_services
     user system
@@ -295,7 +308,7 @@ service ril-daemon /system/bin/rild
     socket rild stream 660 root radio
     socket rild-debug stream 660 radio system
     user root
-    group radio cache inet misc system audio sdcard_rw net_admin net_raw qcom_oncrpc diag
+    group radio cache inet misc system audio sdcard_rw net_admin net_raw
 
 service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-system-server
     class zygote_services
@@ -359,12 +372,6 @@ service pbap /system/bin/sdptool add --channel=19 PBAP
     disabled
     oneshot
 
-service map /system/bin/sdptool add --channel=16 MAS
-    user bluetooth
-    group bluetooth net_bt_admin
-    disabled
-    oneshot
-
 service installd /system/bin/installd
     class post-zygote_services
     socket installd stream 600 system system
@@ -396,3 +403,31 @@ service dumpstate /system/bin/dumpstate -s
     disabled
     oneshot
 
+service ap_fmloader /system/bin/wlan_loader -f /system/etc/wifi/fw_tiwlan_ap.bin -i /system/etc/wifi/tiwlan_ap.ini -e /pds/wifi/nvs_map.bin
+    class post-zygote_services
+    disabled
+    oneshot
+
+service hostapd /system/bin/Hostapd -d /data/misc/wifi/hostapd.conf
+    class post-zygote_services
+    socket hostapd_tiwlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dnsmasq /system/bin/logwrapper /system/bin/dnsmasq_mot -C/data/misc/wifi/dns.conf -k
+    class post-zygote_services
+    group wifi
+    disabled
+    oneshot
+
+service mynet_start /system/bin/sh /data/misc/wifi/forward_start.sh
+    class post-zygote_services
+    disabled
+    oneshot
+
+service mynet_stop /system/bin/sh /data/misc/wifi/forward_stop.sh
+    class post-zygote_services
+    disabled
+    oneshot
+ 
+ 
