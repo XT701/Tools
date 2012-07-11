@@ -336,7 +336,7 @@ service keypadinit /system/bin/sh /system/bin/init_prep_keypad.sh
     user root
     oneshot
 
-service usbd /sbin/usbd
+service usbd /system/bin/usbd
     class pre-zygote_services
     user root
     group mot_usb system
