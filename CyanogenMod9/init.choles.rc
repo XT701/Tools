@@ -1,7 +1,6 @@
 on init
 
     symlink /dev /dev/netmux
-    exec /init_prep_keypad.sh
     mount rootfs rootfs / rw remount
 
     mkdir /cdrom 0755 system system
