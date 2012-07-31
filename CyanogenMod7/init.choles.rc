@@ -34,7 +34,7 @@ on init
     mkdir /data/download 0775 system system
     mkdir /data/download/mystuff 0775 system system
 
-    write /dev/usb_device_mode msc_adb
+    # write /dev/usb_device_mode msc_adb
 
     chmod 0660 /dev/mtp
     chmod 0660 /dev/ttyGS0
@@ -44,6 +44,9 @@ on init
     chown mot_usb mot_usb /dev/ttyGS0
     chown mot_usb mot_usb /dev/usb_device_mode
     chown mot_usb mot_usb /proc/mtpctl
+    
+    insmod /lib/modules/symsearch.ko
+    insmod /lib/modules/mot_usb.ko
 
 on early-boot
     chmod 0666 /dev/DspBridge
@@ -216,6 +219,21 @@ on property:persist.sys.qtouch_num=4
 
 on property:persist.sys.qtouch_num=5
     write /proc/qtouch/num_touch 5
+
+on property:persist.sys.ledthreshold=100
+    write /proc/low_batt/threshold 100
+
+on property:persist.sys.ledthreshold=0
+    write /proc/low_batt/threshold 0
+
+on property:persist.sys.ledthreshold=5
+    write /proc/low_batt/threshold 5
+
+on property:persist.sys.ledthreshold=15
+    write /proc/low_batt/threshold 15
+
+on property:persist.sys.ledthreshold=10
+    write /proc/low_batt/threshold 10
 
 # Power up to normal
 on property:tcmd.suspend=0
