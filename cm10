@@ -1,0 +1,1 @@
+./repack-bootimg.pl gzip ../Kernel/arch/arm/boot/zImage CyanogenMod10 boot.img
