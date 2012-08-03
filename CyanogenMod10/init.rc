@@ -485,8 +485,8 @@ service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-sys
 
 service drm /system/bin/drmserver
     class zygote_services
-    user drm
-    group drm system inet drmrpc sdcard_r
+    user drm root
+    group drm system inet drmrpc sdcard_r root
 
 service media /system/bin/mediaserver
     class zygote_services

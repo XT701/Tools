@@ -75,12 +75,6 @@ setprop ro.sys.atvc_allow_efem 0
 
 # Install custom kernel modules
     insmod /system/lib/modules/symsearch.ko
-
-    # workaround the missing omapfb.vram bootarg
-    write /sys/devices/platform/omapdss/overlay0/enabled 0
-    write /sys/devices/platform/omapfb/graphics/fb0/size 4194304
-    write /sys/devices/platform/omapdss/overlay0/enabled 1
-
     insmod /system/lib/modules/overclock.ko
     insmod /system/lib/modules/mot_usb.ko
 # Allow everybody to read the xt_qtaguid resource tracking misc dev.
