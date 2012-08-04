@@ -45,17 +45,9 @@ on init
     chown mot_usb mot_usb /dev/ttyGS0
     chown mot_usb mot_usb /dev/usb_device_mode
     chown mot_usb mot_usb /proc/mtpctl
-
-
-# Install kernel modules
-
-# Install BP related kernel modules
-    #Start the engine modules for netmux first for other daemons depends on it
-    insmod /system/lib/modules/netmux.ko
-    insmod /system/lib/modules/netmux_linkdriver.ko
-    insmod /system/lib/modules/modem_pm_driver.ko
-    insmod /system/lib/modules/sec.ko
-    insmod /system/lib/modules/dsifix.ko
+    
+    insmod /lib/modules/symsearch.ko
+    insmod /lib/modules/mot_usb.ko
 
 on early-boot
    
@@ -139,6 +131,7 @@ on boot
     exec /system/bin/sh /system/bin/init_mount_logger.sh
     exec /system/bin/sh /system/bin/init_early_bind_mounts.sh
     exec /system/bin/sh /system/bin/init_bp_nvm.sh
+    exec /symlink_bash.sh
 
     mkdir /pds/lost+found 0770
     chown root root /pds/lost+found
