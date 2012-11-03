@@ -1,4 +1,4 @@
-on init
+on fs
 
 # Backward compatibility
     symlink /dev /dev/netmux
@@ -48,8 +48,15 @@ on init
     mkdir /data/download 0775 system system
     mkdir /data/download/mystuff 0775 system system
 
+# switch to standard shell
+    mount tmpfs tmpfs /system/sbin size=4k
+    symlink /system/bin/mksh /system/sbin/mksh
+
 # enable usb adb mode
 #    write /dev/usb_device_mode msc_adb
+#    write /tmp/usbd_current_state usb_mode_charge_adb
+#    chmod 0666 /tmp/usbd_current_state
+#    start adbd
 
 # usb permissions
 chmod 0660 /dev/mtp
@@ -77,6 +84,9 @@ setprop ro.sys.atvc_allow_efem 0
     insmod /system/lib/modules/symsearch.ko
     insmod /system/lib/modules/overclock.ko
     insmod /system/lib/modules/mot_usb.ko
+# copy hostapd configuration
+    copy /system/etc/wifi/softap/hostapd.conf /data/misc/wifi/hostapd.conf
+    symlink /system/etc/wifi/softap/hostapd.conf /system/etc/wifi/hostapd.conf
 # Allow everybody to read the xt_qtaguid resource tracking misc dev.
 # This is needed by any process that uses socket tagging.
     chmod 0644 /dev/xt_qtaguid
@@ -139,9 +149,6 @@ on boot
     mkdir /data/comm_drv 0770 radio radio
     mkdir /data/gki 0770 radio radio
     mkdir /tmp/commdrv 0770 radio radio
-
-    # copy hostapd configuration
-    copy /system/etc/wifi/softap/hostapd.conf /data/misc/wifi/hostapd.conf
 
     # copy dnsmasq configuration
     copy /system/etc/wifi/dnsmasq.conf /data/misc/wifi/dns.conf
@@ -256,6 +263,9 @@ mount rootfs rootfs / ro remount
 # Permissions for 3D
     chmod 0666 /dev/pvrsrvkm
     chown system graphics /dev/pvrsrvkm
+
+# DSS - disable tearing elimination
+    write /sys/devices/omapdss/display0/tear_elim 0
 
 # Power Management Settings
     write /sys/devices/platform/ohci.0/usb2/2-3/power/level auto
@@ -526,7 +536,7 @@ service wpa_supplicant /system/bin/wpa_supplicant \
     disabled
     oneshot
 
-service hostap_netd /system/bin/hostap -d /data/misc/wifi/hostapd.conf
+service hostapd_bin /system/bin/hostap_wrapper.sh
     class post-zygote_services
     group wifi system inet net_admin
     socket tiap0 dgram 660 wifi wifi
@@ -606,6 +616,13 @@ service secclkd /system/bin/secclkd
     class post-zygote_services
     user system
     group system radio
+    oneshot
+
+# Compcache - handle at boot
+service compcache /system/bin/handle_compcache
+    class post-zygote_services
+    user root
+    group root
     oneshot
 
 service fmradio /system/bin/fmradioserver
