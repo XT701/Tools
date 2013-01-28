@@ -1,0 +1,16 @@
+how to compile the fucking mkbootimg in 64bit
+git clone git://github.com/android/platform_system_core.git
+cd platform_system_core
+cd libmincrypt
+gcc -c *.c -I../include
+ar rcs libmincrypt.a  *.o
+cd ../mkbootimg
+gcc mkbootimg.c -o mkbootimg -I../include ../libmincrypt/libmincrypt.a
+
+and ... the fuckimg mkbootfs
+cd ../cpio
+gcc mkbootfs.c  -o mkbootfs -I../include
+
+then
+mkbootimg/mkbootimg
+cpio/mkbootfs
