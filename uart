@@ -1,0 +1,1 @@
+./repack-bootimg.pl gzip ../Kernel-32/arch/arm/boot/zImage Milestone boot.img

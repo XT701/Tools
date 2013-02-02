@@ -1,13 +1,13 @@
 #!/bin/bash
 PS3="Choose (1-3):"
 echo "Choose your kernel from the list below."
-select kernel in Kernel Kernel_DEPRECATED M1_Kernel
+select kernel in Kernel Kernel_DEPRECATED Kernel-32 Kernel-3.0
 do
 	break
 done
 PS3="Choose (1-4):"
 echo "Choose your ramdisk from the list below."
-select name in 2.1 CyanogenMod6 CyanogenMod7 CyanogenMod9  MIUI OpenRecovery Korea
+select name in 2.1 CyanogenMod6 CyanogenMod7 CyanogenMod9 Milestone MIUI OpenRecovery Korea
 do
 	break
 done
