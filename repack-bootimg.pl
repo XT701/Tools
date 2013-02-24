@@ -15,7 +15,7 @@ system ("find . | cpio -o -H newc | $ARGV[0] > $dir/ramdisk-repack.cpio.gz");
 
 chdir $dir or die "$ARGV[2] $!";;
 
-system ("./mkbootimg --kernel $ARGV[1] --ramdisk ramdisk-repack.cpio.gz -o $ARGV[3]");
+system ("mkbootimg --kernel $ARGV[1] --ramdisk ramdisk-repack.cpio.gz -o $ARGV[3]");
 
 unlink("ramdisk-repack.cpio.gz") or die $!;
 

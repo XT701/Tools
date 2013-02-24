@@ -82,7 +82,6 @@ setprop ro.sys.atvc_allow_efem 0
 
 # Install custom kernel modules
     insmod /system/lib/modules/symsearch.ko
-    insmod /system/lib/modules/overclock.ko
     insmod /system/lib/modules/mot_usb.ko
 # copy hostapd configuration
     copy /system/etc/wifi/softap/hostapd.conf /data/misc/wifi/hostapd.conf
@@ -270,7 +269,7 @@ mount rootfs rootfs / ro remount
 # Power Management Settings
     write /sys/devices/platform/ohci.0/usb2/2-3/power/level auto
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 250000
-#    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 550000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 850000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     write /sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold 86
     write /sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate 46875
@@ -325,6 +324,12 @@ on property:persist.sys.qtouch_num=4
 
 on property:persist.sys.qtouch_num=5
     write /proc/qtouch/num_touch 5
+
+on property:persist.sys.hall_input_off=1
+    write /sys/module/bu52014hfv/parameters/disable 1
+
+on property:persist.sys.hall_input_off=0
+    write /sys/module/bu52014hfv/parameters/disable 0
 
 # Power up to normal
 on property:tcmd.suspend=0
