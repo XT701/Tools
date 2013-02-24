@@ -1,0 +1,21 @@
+#!/bin/bash
+adb wait-for-device
+adb push zergRush /data/local/tmp/
+adb shell "chmod 777 /data/local/tmp/zergRush"
+adb shell "./data/local/tmp/zergRush"
+adb wait-for-device
+adb push busybox /data/local/tmp/.
+adb shell "chmod 755 /data/local/tmp/busybox"
+adb shell "/data/local/tmp/busybox mount -o remount,rw /system"
+adb shell "dd if=/data/local/tmp/busybox of=/system/xbin/busybox"
+adb shell "chown root.shell /system/xbin/busybox"
+adb shell "chmod 04755 /system/xbin/busybox"
+adb shell "/system/xbin/busybox --install -s /system/xbin"
+adb shell "rm -r /data/local/tmp/busybox"
+adb push su /system/bin/su
+adb shell "chown root.shell /system/bin/su"
+adb shell "chmod 06755 /system/bin/su"
+adb shell "rm /system/xbin/su"
+adb shell "ln -s /system/bin/su /system/xbin/su"
+adb push Superuser.apk /system/app/.
+adb reboot
